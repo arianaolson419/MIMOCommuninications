@@ -5,6 +5,11 @@ from __future__ import division, print_function
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Constants used for signal creation and analysis.
+SIGNAL_PERIOD = 20 # samples
+HEADER_SYMBOLS = 100
+DATA_SYMBOLS = 1000
+
 def generate_symbols(num_symbols, num_channels, seed):
     """Generate multiple channels of random complex data symbols
 
