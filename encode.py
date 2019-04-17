@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 header = np.zeros((2, 1000))
 data = np.zeros((2, 10000))
 
+# Save the data as a binary file for transmission
+
+
 # TODO: confirm that this is the data we want to save.
 # Save data for decoding and BER calculations.
 np.savez('tx_info.npz', header=header, data=data)
