@@ -27,10 +27,9 @@ signal_time_rx = received_data[::2] + received_data[1::2]*1j
 # # TODO: Find variables needed to get start of the data chunks using the LTS.
 # # functions used: receivers.detect_start_lts
 signal_len = tx_combined.shape[-1]
-lag, signal_time_rx = receivers.detect_start(signal_time_rx, header[0], signal_len)
+lag, signal_time_rx = receivers.detect_start_lts(signal_time_rx, header[0], signal_len)
 
 plt.plot(signal_time_rx.real)
-plt.plot(signal_time_rx.imag)
 plt.show()
 
 
