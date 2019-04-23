@@ -53,8 +53,8 @@ def estimate_channel_alamouti(rx_sections, tx_headers):
         tx_headers {[type]} -- [description]
     """
     # TODO: parse the tx and rx sections accordingly!
-    h1 = estimate_channel_mimo(rx_sections[], tx_headers[])
-    h2 = estimate_channel_mimo(rx_sections[], tx_headers[])
+    #h1 = estimate_channel_mimo(rx_sections[], tx_headers[])
+    #h2 = estimate_channel_mimo(rx_sections[], tx_headers[])
     # TODO: return matrix from format in function's docstring
     pass
 
