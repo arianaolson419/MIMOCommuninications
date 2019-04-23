@@ -10,7 +10,7 @@ import utils.mimo_util as mimo
 tx_info = np.load('tx_info.npz')
 header = tx_info['header']
 data = tx_info['data']
-tx_combined = tx_info['tx_combined']
+tx_combined = tx_info['combined']
 
 # lts = tx_info['lts']
 
@@ -26,8 +26,14 @@ signal_time_rx = received_data[::2] + received_data[1::2]*1j
 
 # # TODO: Find variables needed to get start of the data chunks using the LTS.
 # # functions used: receivers.detect_start_lts
-signal_time_len = tx_combined.shape[-1]
-lag, signal_time_rx = receivers.detect_start_lts(signal_time_rx, header[0], signal_time_len)
+signal_len = tx_combined.shape[-1]
+lag, signal_time_rx = receivers.detect_start(signal_time_rx, header[0], signal_len)
+
+plt.plot(signal_time_rx.real)
+plt.plot(signal_time_rx.imag)
+plt.show()
+
+
 
 # # # correct for timing differences using timing_offset/f_delta variable
 # timing_offset = receivers.estimate_f_delta(lts, num_samples)
