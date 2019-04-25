@@ -34,6 +34,30 @@ def generate_symbols(num_symbols, seed):
     symbols = symbols_real + symbols_imag
     return symbols
 
+def generate_header_data(symbols, symbol_period):
+    """Generate data from an array of complex symbols to transmit over USRP.
+    Symbols are modulated with rectangular pulses. This data is not Alamouti
+    encoded.
+
+    Args:
+        symbols (complex 1D ndarray): An array of length num_symbols
+            symbols of +/-1 and +/-1j.
+        symbol_period (int): The number of samples in a single pulse.
+
+    Returns:
+        header_data (1D complex ndarray): An array representing the data of one header.
+    """
+    pulse = np.ones(symbol_period)
+    x = np.zeros((symbols.shape[-1] * symbol_period), dtype=np.complex128)
+    x[::symbol_period] = symbols
+    header = np.convolve(x, pulse)
+
+    header_data = np.zeros((2 * header.shape[-1]))
+    header_data[::2] = header.real
+    header_data[1::2] = header.imag
+
+    return header_data
+
 def generate_tx_data_2x2(symbols, symbol_period):
     """Generate alamouti encoded data from an array of complex symbols to
     transmit over USRP. Symbols are modulated with rectangular pulses.
@@ -44,8 +68,10 @@ def generate_tx_data_2x2(symbols, symbol_period):
         symbol_period (int): The number of samples in a single pulse.
 
     Returns:
-        tx_1 (1D complex ndarray): An array representing the data to transmit from the first antenna
-        tx_2 (1D complex ndarray): An array representing the data to transmit from the second antenna
+        tx_1 (1D complex ndarray): An array representing the data to transmit
+            from the first antenna
+        tx_2 (1D complex ndarray): An array representing the data to transmit
+            from the second antenna
     """
     pulse = np.ones(symbol_period)
     x = np.zeros((2, symbols.shape[-1] * symbol_period), dtype=np.complex128)
