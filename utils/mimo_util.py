@@ -52,11 +52,7 @@ def generate_header_data(symbols, symbol_period):
     x[::symbol_period] = symbols
     header = np.convolve(x, pulse)
 
-    header_data = np.zeros((2 * header.shape[-1]))
-    header_data[::2] = header.real
-    header_data[1::2] = header.imag
-
-    return header_data
+    return header
 
 def generate_tx_data_2x2(symbols, symbol_period):
     """Generate alamouti encoded data from an array of complex symbols to
@@ -91,13 +87,9 @@ def generate_tx_data_2x2(symbols, symbol_period):
     tx1 = np.convolve(x[0], pulse)
     tx2 = np.convolve(x[1], pulse)
 
-    tx_data = np.zeros((2, 2 * tx1.shape[-1]), dtype=np.complex128)
-    tx_data[0, ::2] = tx1.real
-    tx_data[0, 1::2] = tx1.imag
-    tx_data[1, ::2] = tx2.real
-    tx_data[1, 1::2] = tx2.imag
+    tx = np.vstack([tx1, tx2])
 
-    return tx_data
+    return tx
 
 def add_headers_2x2(tx_data, headers, zero_samples):
     """Combine headers and data for transmission.
