@@ -19,6 +19,9 @@ tx_combined = tx_info['combined']
 received_data = np.fromfile("Data/MIMOReceive.dat", dtype=np.float32)
 signal_time_rx = received_data[::2] + received_data[1::2]*1j
 
+plt.plot(signal_time_rx.real)
+plt.show()
+
 # # 
 # plt.plot(signal_time_rx.real)
 # plt.plot(signal_time_rx.imag)
