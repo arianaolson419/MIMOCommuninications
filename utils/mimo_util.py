@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 # Constants used for signal creation and analysis.
 SYMBOL_PERIOD = 20 # samples
-HEADER_SYMBOLS = 100
+HEADER_SYMBOLS = 1000
 DATA_SYMBOLS = 1000
 ZERO_SAMPLES = 5000 # samples
 NUM_CHANNELS = 2
@@ -144,7 +144,7 @@ def interleave_and_save_data(tx_combined, dest_path_tx1, dest_path_tx2):
         dest_path_tx_1 (string): The path to save the sequence for antenna 1 to.
         dest_path_tx2 (string): The path to save the sequence for antenna 2 to.
     """
-    tmp = np.zeros((2, tx_combined.shape[-1] * 2))
+    tmp = np.zeros((2, tx_combined.shape[-1] * 2), dtype=np.float32)
     tmp[:, ::2] = tx_combined.real
     tmp[:, 1::2] = tx_combined.imag
 

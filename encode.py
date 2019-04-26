@@ -21,6 +21,8 @@ header = np.vstack([header_1, header_2])
 
 # Combine data and save to files for USRP transmission.
 tx_combined = mimo.add_headers_2x2(tx_data, header, mimo.ZERO_SAMPLES)
+tx_combined /= 2
+
 mimo.interleave_and_save_data(tx_combined, 'tx_1.dat', 'tx_2.dat')
 
 # Save data arrays for decoding and BER calculations.
