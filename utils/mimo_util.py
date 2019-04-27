@@ -76,8 +76,8 @@ def generate_tx_data_2x2(symbols, symbol_period):
     # Encode with Alamouti scheme.
     for i in range(0, symbols.shape[-1], 2):
         tmp[0, i] = symbols[i]
-        tmp[0, i + 1] = symbols[i + 1]
-        tmp[1, i] = -np.conjugate(symbols[i + 1])
+        tmp[0, i + 1] = -np.conjugate(symbols[i + 1])
+        tmp[1, i] = symbols[i + 1]
         tmp[1, i + 1] = np.conjugate(symbols[i])
 
     # Split into real and imaginary components.

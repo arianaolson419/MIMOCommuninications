@@ -136,12 +136,19 @@ def recover_signals(rx1, rx2, W):
     return x1_est, x2_est
 
 def split_signal(ys):
+    """Split a one dimensional signal into two rows in which each column
+    contains a symbol transmitted at one time and a signal transmitted at the
+    subsequent time (see
+            http://spacetimecodes.blogspot.com/p/alamouti-code.html).
+    """
     split = np.zeros((2, ys.shape[-1] // 2), dtype=np.complex128)
     split[0] = ys[::2]
     split[1] = ys[1::2]
     return split
 
 def merge_signal(split):
+    """Undoes the split_signal function.
+    """
     merge = np.zeros(split.shape[-1] * 2, dtype=np.complex128)
     merge[::2] = split[0]
     merge[1::2] = split[1]
