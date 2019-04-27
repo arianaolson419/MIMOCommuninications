@@ -30,9 +30,9 @@ def estimate_channel(rx_header_1, rx_header_2, tx_header_1, tx_header_2):
         rx_header_2 (complex 1D ndarray): The portion of the signal received at
             rx antenna 2 corresponding to the header transmitted at tx antenna
             2.
-        tx1_header (complex 1D ndarray): The header transmitted from tx antenna
+        tx_header_1 (complex 1D ndarray): The header transmitted from tx antenna
             1.
-        tx2_header (complex 1D ndarray): The header transmitted from tx antenna
+        tx_header_2 (complex 1D ndarray): The header transmitted from tx antenna
             2.
     Returns:
         H (complex (2,) ndarray): A matrix of channel estimations.
@@ -41,12 +41,12 @@ def estimate_channel(rx_header_1, rx_header_2, tx_header_1, tx_header_2):
     header12 = np.copy(rx_header_2)
 
     # Replace 0s in denominators to avoid division errors.
-    tx1_header[tx1_header == 0] = 1e-12
-    tx2_header[tx2_header == 0] = 1e-12
+    tx_header_1[tx_header_1 == 0] = 1e-12
+    tx_header_2[tx_header_2 == 0] = 1e-12
 
     H = np.zeros(2, dtype=np.complex128)
-    H[0] = np.mean(header11 / tx1_header)
-    H[1] = np.mean(header12 / tx2_header)
+    H[0] = np.mean(header11 / tx_header_1)
+    H[1] = np.mean(header12 / tx_header_2)
 
     return H
 
