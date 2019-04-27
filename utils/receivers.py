@@ -136,7 +136,7 @@ def recover_signals(rx1, rx2, W):
     return x1_est, x2_est
 
 def split_signal(ys):
-    split = np.zeros(2, ys.shape[-1] // 2, dtype=np.complex128)
+    split = np.zeros((2, ys.shape[-1] // 2), dtype=np.complex128)
     split[0] = ys[::2]
     split[1] = ys[1::2]
     return split
@@ -149,8 +149,11 @@ def merge_signal(split):
 
 def recover_signals_alamouti(rx_data, H):
     rx_split = split_signal(rx_data)
+    print("rx_split shape: ", rx_split.shape)
     recovered = np.matmul(np.linalg.inv(H), rx_split)
+    print("recovered shape: ", recovered.shape)
     recovered_merged = merge_signal(recovered)
+    print("recovered_merged shape: ", recovered_merged.shape)
     return recovered_merged
 
 def recover_signals_mimo(rx, W):
@@ -255,7 +258,7 @@ def correct_freq_offset(signal_time, f_delta):
     return signal_time_corrected
 
 
-def decode_signal_freq(channel_coefficients, signal_freq):
+def calculate_error_rate(recovered_signal, transmitted_signal):
     """Decode a frequency domain signal into a series of bits.
 
     Args:
@@ -265,14 +268,10 @@ def decode_signal_freq(channel_coefficients, signal_freq):
     Returns:
         bits (1D ndarray): The bit sequence decoded from signal_freq.
     """
-    # TODO: Find the symbol that's closest to symbol 0
-    # h1 = 
-    # h2 = 
-    # h1_conjugate = 
-    # h2_conjugate = 
+    pass
 
-    bits = np.sign(signal_freq.real) + 1j * np.sign(signal_freq.imag)
+    # bits = np.sign(signal_freq.real) + 1j * np.sign(signal_freq.imag)
 
-    return bits
+    # return bits
 
 
