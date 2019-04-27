@@ -135,6 +135,24 @@ def recover_signals(rx1, rx2, W):
 
     return x1_est, x2_est
 
+def split_signal(ys):
+    split = np.zeros(2, ys.shape[-1] // 2, dtype=np.complex128)
+    split[0] = ys[::2]
+    split[1] = ys[1::2]
+    return split
+
+def merge_signal(split):
+    merge = np.zeros(split.shape[-1] * 2, dtype=np.complex128)
+    merge[::2] = split[0]
+    merge[1::2] = split[1]
+    return merge
+
+def recover_signals_alamouti(rx_data, H):
+    rx_split = split_signal(rx_data)
+    recovered = np.matmul(np.linalg.inv(H), rx_split)
+    recovered_merged = merge_signal(recovered)
+    return recovered_merged
+
 def recover_signals_mimo(rx, W):
     """Use a weight matrix to recover MIMO signals.
     Args:
