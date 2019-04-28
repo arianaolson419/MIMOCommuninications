@@ -5,6 +5,7 @@ Part b of the Principles of Wireless Communications Lab 2
 from __future__ import print_function, division
 import numpy as np
 import matplotlib.pyplot as plt
+import utils.mimo_util as mimo
 
 def detect_start_lts(signal_time_rx, lts, signal_length):
     cross_corr = np.correlate(signal_time_rx, lts)
@@ -64,6 +65,7 @@ def estimate_channel_alamouti(rx_header_1, rx_header_2, tx_header_1, tx_header_2
     #h2 = estimate_channel_mimo(rx_sections[], tx_headers[])
     # TODO: return matrix from format in function's docstring
     H = estimate_channel(rx_header_1, rx_header_2, tx_header_1, tx_header_2)
+    print("H (before Alamouti parsing): ", H)
     H_alamouti = np.zeros((2, 2), dtype=np.complex128)
     H_alamouti[0][0] = H[0]
     H_alamouti[0][1] = H[1]
@@ -155,6 +157,8 @@ def merge_signal(split):
     return merge
 
 def recover_signals_alamouti(rx_data, H):
+    """Recovers signal by multiplying by the inverse of the channel matrix 
+    """
     rx_split = split_signal(rx_data)
     print("rx_split shape: ", rx_split.shape)
     recovered = np.matmul(np.linalg.inv(H), rx_split)
@@ -282,3 +286,24 @@ def calculate_error_rate(recovered_signal, transmitted_signal):
     # return bits
 
 
+def turn_data_to_bits(input):
+    """
+    Takes in the input and samples every 20 bits. 
+    If the majority of the imag or real bits there are greater than 0, assign the index a 1
+    """
+    bitsequence = [0] * (2 * input.shape[-1] // mimo.SYMBOL_PERIOD)
+    
+    for coordinates_i in range(0, len(input), mimo.SYMBOL_PERIOD):
+        coordinates = input[coordinates_i:coordinates_i+mimo.SYMBOL_PERIOD]
+        
+        # seeking for majority positive, otherwise false
+        positive_real = (np.real(coordinates) > 0).sum() > (mimo.SYMBOL_PERIOD//2) 
+        positive_imag = (np.imag(coordinates) > 0).sum() > (mimo.SYMBOL_PERIOD//2)
+
+        if (positive_real):
+            bitsequence[(coordinates_i//20)] = 1
+        
+        if positive_imag:
+            bitsequence[(coordinates_i//20)+1] = 1
+
+    return bitsequence

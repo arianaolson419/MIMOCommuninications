@@ -12,28 +12,28 @@ header = tx_info['header']
 data = tx_info['data']
 tx_combined = tx_info['combined']
 
-# lts = tx_info['lts']
+use_saved_signal = True
 
-
+if not use_saved_signal:
 # load received data
-received_data = np.fromfile("Data/MIMOReceive.dat", dtype=np.float32)
-signal_time_rx = received_data[::2] + received_data[1::2]*1j
+    received_data = np.fromfile("Data/MIMOReceive.dat", dtype=np.float32)
+    signal_time_rx = received_data[::2] + received_data[1::2]*1j
 
-plt.plot(signal_time_rx.real)
-plt.show()
-
-# # 
-# plt.plot(signal_time_rx.real)
-# plt.plot(signal_time_rx.imag)
-# plt.show()
+    plt.plot(signal_time_rx.real)
+    plt.show()
 
 # # TODO: Find variables needed to get start of the data chunks using the LTS.
 # # functions used: receivers.detect_start_lts
-signal_len = tx_combined.shape[-1]
-lag, signal_time_rx = receivers.detect_start_lts(signal_time_rx, header[0], signal_len)
+    signal_len = tx_combined.shape[-1]
+    lag, signal_time_rx = receivers.detect_start_lts(signal_time_rx, header[0], signal_len)
 
-plt.plot(signal_time_rx.real)
-plt.show()
+    plt.plot(signal_time_rx.real)
+    plt.show()
+
+    np.savez('isolated_signal.npz', signal_rx=signal_time_rx)
+
+else:
+    signal_time_rx = np.load('isolated_signal.npz')["signal_rx"]
 
 rx_header_1 = signal_time_rx[:header.shape[-1]]
 rx_header_2 = signal_time_rx[header.shape[-1]+mimo.ZERO_SAMPLES:header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1]]
@@ -60,9 +60,42 @@ print("rx_data.shape: ", rx_data.shape)
 
 
 recovered_signal = receivers.recover_signals_alamouti(rx_data, H)
-print(recovered_signal)
+print(recovered_signal.shape)
+print(data.shape)
 
-plt.plot(np.sign(recovered_signal) == np.sign(data))
-plt.show()
 
 # # Calculate Bit Error Rate (use signal_util.calculate_error_rate() function)
+# signal_util.calculate_error_rate()
+tx_qpsk = np.zeros(data.shape[-1], dtype=np.complex128)
+tx_qpsk[::2] = data[0, ::2]
+tx_qpsk[1::2] = data[1, ::2]
+
+
+tx_qpsk_bits          = receivers.turn_data_to_bits(tx_qpsk)
+recovered_signal_bits = receivers.turn_data_to_bits(recovered_signal)
+
+plt.plot(recovered_signal_bits)
+plt.show()
+
+plt.plot(tx_qpsk_bits)
+plt.show()
+
+
+
+
+
+
+print(len(tx_qpsk_bits))
+print(len(recovered_signal_bits))
+
+plt.plot(np.array(recovered_signal_bits) == np.array(tx_qpsk_bits))
+plt.show()
+
+print(np.mean(np.array(recovered_signal_bits)[:1000] == np.array(tx_qpsk_bits)[:1000]))
+
+# plt.plot(np.sign(recovered_signal.real) == np.sign(tx_qpsk.real))
+# plt.show()
+
+
+# plt.plot(np.sign(recovered_signal.imag) == np.sign(tx_qpsk.imag))
+# plt.show()
