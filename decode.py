@@ -55,15 +55,14 @@ print("H:\n", H)
 # # based on estimates, H would be [[h_1, h_2], [h*_2, -h1*_1]]
 # # calculate s_0 and s_1
 
-rx_data = signal_time_rx[header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1] + mimo.ZERO_SAMPLES: header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1] + mimo.ZERO_SAMPLES + data.shape[-1] - 1]
+rx_data = signal_time_rx[header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1] + mimo.ZERO_SAMPLES: header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1] + mimo.ZERO_SAMPLES + data.shape[-1]]
 print("rx_data.shape: ", rx_data.shape)
 
 
 recovered_signal = receivers.recover_signals_alamouti(rx_data, H)
 print(recovered_signal)
 
-plt.plot(np.sign(recovered_signal))
+plt.plot(np.sign(recovered_signal) == np.sign(data))
 plt.show()
 
 # # Calculate Bit Error Rate (use signal_util.calculate_error_rate() function)
-# signal_util.calculate_error_rate()
