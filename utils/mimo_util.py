@@ -50,7 +50,7 @@ def generate_header_data(symbols, symbol_period):
     pulse = np.ones(symbol_period)
     x = np.zeros((symbols.shape[-1] * symbol_period), dtype=np.complex128)
     x[::symbol_period] = symbols
-    header = np.convolve(x, pulse)
+    header = np.convolve(x, pulse)[:symbols.shape[-1] * symbol_period]
 
     return header
 
@@ -71,27 +71,30 @@ def generate_tx_data_2x2(symbols, symbol_period):
     """
     pulse = np.ones(symbol_period)
     x = np.zeros((2, symbols.shape[-1] * symbol_period), dtype=np.complex128)
-    tmp = np.zeros((2, symbols.shape[-1]), dtype=np.complex128)
+    x[0, ::symbol_period] = symbols.real
+    x[1, ::symbol_period] = symbols.imag
+
+    x[0] = np.convolve(x[0], pulse)[:symbols.shape[-1] * symbol_period]
+    x[1] = np.convolve(x[1], pulse)[:symbols.shape[-1] * symbol_period]
+
+    qpsk = x[0] + x[1] * 1j
 
     # Encode with Alamouti scheme.
-    for i in range(0, symbols.shape[-1], 2):
-        tmp[0, i] = symbols[i]
-        tmp[0, i + 1] = -np.conjugate(symbols[i + 1])
-        tmp[1, i] = symbols[i + 1]
-        tmp[1, i + 1] = np.conjugate(symbols[i])
+    # The first row is the data transmitted from antenna 1, and the second row
+    # is the data transmitted from antenna 2.
+    tx = np.zeros((2, qpsk.shape[-1]), dtype=np.complex128)
 
-    # Split into real and imaginary components.
-    x[:, ::symbol_period] = tmp
-    
-    # Modulate with PAM
-    tx1 = np.convolve(x[0], pulse)
-    tx2 = np.convolve(x[1], pulse)
+    # Time t.
+    tx[0, ::2] = qpsk[::2] # x1
+    tx[1, ::2] = qpsk[1::2] # x2
 
-    tx = np.vstack([tx1, tx2])
+    # Time t + T.
+    tx[0, 1::2] = -np.conj(qpsk[1::2]) # -x2*
+    tx[1, 1::2] = np.conj(qpsk[::2]) # x1*
 
     return tx
 
-def add_headers_2x2(tx_data, headers, zero_samples):
+def add_headers_2x2(tx_data, headers, zero_samples, scale=1.0):
     """Combine headers and data for transmission.
 
     The order of transmission is as follows:
@@ -111,6 +114,7 @@ def add_headers_2x2(tx_data, headers, zero_samples):
             the header to transmit from one antenna.
         zero_samples (int): The number of zero samples to pad between headers
             and data.
+        scale (float): Amplitude scale factor between 0 and 1.
     
     Returns:
         tx_combined (complex ndarray): A two-row array containing the full
@@ -132,7 +136,7 @@ def add_headers_2x2(tx_data, headers, zero_samples):
     tx_combined[1, header_2_start:header_2_end] = headers[1]
     tx_combined[:, data_start:] = tx_data
 
-    return tx_combined
+    return tx_combined * scale
 
 def interleave_and_save_data(tx_combined, dest_path_tx1, dest_path_tx2):
     """Interleave the real and imaginary components of the transmission sequences

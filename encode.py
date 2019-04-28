@@ -20,8 +20,7 @@ header_2 = mimo.generate_header_data(symbols_header_2, mimo.SYMBOL_PERIOD)
 header = np.vstack([header_1, header_2])
 
 # Combine data and save to files for USRP transmission.
-tx_combined = mimo.add_headers_2x2(tx_data, header, mimo.ZERO_SAMPLES)
-tx_combined /= 2
+tx_combined = mimo.add_headers_2x2(tx_data, header, mimo.ZERO_SAMPLES, scale=0.5)
 
 mimo.interleave_and_save_data(tx_combined, 'tx_1.dat', 'tx_2.dat')
 
