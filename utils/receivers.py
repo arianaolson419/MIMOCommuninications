@@ -160,11 +160,11 @@ def recover_signals_alamouti(rx_data, H):
     """Recovers signal by multiplying by the inverse of the channel matrix 
     """
     rx_split = split_signal(rx_data)
-    print("rx_split shape: ", rx_split.shape)
+    
     recovered = np.matmul(np.linalg.inv(H), rx_split)
-    print("recovered shape: ", recovered.shape)
+    
     recovered_merged = merge_signal(recovered)
-    print("recovered_merged shape: ", recovered_merged.shape)
+    
     return recovered_merged
 
 def recover_signals_mimo(rx, W):
@@ -291,19 +291,15 @@ def turn_data_to_bits(input):
     Takes in the input and samples every 20 bits. 
     If the majority of the imag or real bits there are greater than 0, assign the index a 1
     """
-    bitsequence = [0] * (2 * input.shape[-1] // mimo.SYMBOL_PERIOD)
-    
+    print("input length: ", input.shape)
+    bitsequence = []
+
     for coordinates_i in range(0, len(input), mimo.SYMBOL_PERIOD):
-        coordinates = input[coordinates_i:coordinates_i+mimo.SYMBOL_PERIOD]
+        # coordinates = input[coordinates_i:coordinates_i+mimo.SYMBOL_PERIOD]
         
-        # seeking for majority positive, otherwise false
-        positive_real = (np.real(coordinates) > 0).sum() > (mimo.SYMBOL_PERIOD//2) 
-        positive_imag = (np.imag(coordinates) > 0).sum() > (mimo.SYMBOL_PERIOD//2)
+        middle_coordinate = input[coordinates_i + (mimo.SYMBOL_PERIOD//2)]
 
-        if (positive_real):
-            bitsequence[(coordinates_i//20)] = 1
-        
-        if positive_imag:
-            bitsequence[(coordinates_i//20)+1] = 1
+        bitsequence.append(np.sign(middle_coordinate.real))
+        bitsequence.append(np.sign(middle_coordinate.imag))
 
-    return bitsequence
+    return np.asarray(bitsequence)
