@@ -65,7 +65,6 @@ def estimate_channel_alamouti(rx_header_1, rx_header_2, tx_header_1, tx_header_2
     #h2 = estimate_channel_mimo(rx_sections[], tx_headers[])
     # TODO: return matrix from format in function's docstring
     H = estimate_channel(rx_header_1, rx_header_2, tx_header_1, tx_header_2)
-    print("H (before Alamouti parsing): ", H)
     H_alamouti = np.zeros((2, 2), dtype=np.complex128)
     H_alamouti[0][0] = H[0]
     H_alamouti[0][1] = H[1]
@@ -160,8 +159,9 @@ def recover_signals_alamouti(rx_data, H):
     """Recovers signal by multiplying by the inverse of the channel matrix 
     """
     rx_split = split_signal(rx_data)
+    rx_split[1] = np.conj(rx_split[1])
     
-    recovered = np.matmul(np.linalg.inv(H), rx_split)
+    recovered = np.matmul(np.linalg.pinv(H), rx_split)
     
     recovered_merged = merge_signal(recovered)
     
@@ -269,7 +269,7 @@ def correct_freq_offset(signal_time, f_delta):
     return signal_time_corrected
 
 
-def calculate_error_rate(recovered_signal, transmitted_signal):
+def calculate_error_rate(recovered_signal_bits, transmitted_signal_bits):
     """Decode a frequency domain signal into a series of bits.
 
     Args:
@@ -279,11 +279,7 @@ def calculate_error_rate(recovered_signal, transmitted_signal):
     Returns:
         bits (1D ndarray): The bit sequence decoded from signal_freq.
     """
-    pass
-
-    # bits = np.sign(signal_freq.real) + 1j * np.sign(signal_freq.imag)
-
-    # return bits
+    return np.sum(recovered_signal_bits != transmitted_signal_bits)/recovered_signal_bits.shape[-1]
 
 
 def turn_data_to_bits(input):
@@ -302,4 +298,4 @@ def turn_data_to_bits(input):
         bitsequence.append(np.sign(middle_coordinate.real))
         bitsequence.append(np.sign(middle_coordinate.imag))
 
-    return np.asarray(bitsequence)
+    return np.sign(input)
