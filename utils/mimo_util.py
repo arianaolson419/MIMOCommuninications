@@ -69,28 +69,38 @@ def generate_tx_data_2x2(symbols, symbol_period):
         tx_2 (1D complex ndarray): An array representing the data to transmit
             from the second antenna
     """
+
+    # Encode the symbols with the Alamouti scheme.
+    alamouti = np.zeros((2, symbols.shape[-1]), dtype=np.complex128)
+    alamouti[0, ::2] = symbols[::2]
+    alamouti[1, ::2] = symbols[1::2]
+
+    alamouti[0, 1::2] = -np.conj(symbols[1::2])
+    alamouti[1, 1::2] = np.conj(symbols[::2])
+
     pulse = np.ones(symbol_period)
-    x = np.zeros((2, symbols.shape[-1] * symbol_period), dtype=np.complex128)
-    x[0, ::symbol_period] = symbols.real
-    x[1, ::symbol_period] = symbols.imag
+    tx1 = np.zeros((2, alamouti.shape[-1] * symbol_period), dtype=np.complex128)
+    tx1[0, ::symbol_period] = alamouti[0].real
+    tx1[1, ::symbol_period] = alamouti[0].imag
 
-    x[0] = np.convolve(x[0], pulse)[:symbols.shape[-1] * symbol_period]
-    x[1] = np.convolve(x[1], pulse)[:symbols.shape[-1] * symbol_period]
+    tx2 = np.zeros((2, alamouti.shape[-1] * symbol_period), dtype=np.complex128)
+    tx2[0, ::symbol_period] = alamouti[1].real
+    tx2[1, ::symbol_period] = alamouti[1].imag
 
-    qpsk = x[0] + x[1] * 1j
+    # Modulate for QPSK.
+    tx1[0] = np.convolve(tx1[0], pulse)[:alamouti.shape[-1] * symbol_period]    # Real
+    tx1[1] = np.convolve(tx1[1], pulse)[:alamouti.shape[-1] * symbol_period]    # Imag
 
-    # Encode with Alamouti scheme.
-    # The first row is the data transmitted from antenna 1, and the second row
-    # is the data transmitted from antenna 2.
-    tx = np.zeros((2, qpsk.shape[-1]), dtype=np.complex128)
+    tx2[0] = np.convolve(tx2[0], pulse)[:alamouti.shape[-1] * symbol_period]    # Real
+    tx2[1] = np.convolve(tx2[1], pulse)[:alamouti.shape[-1] * symbol_period]    # Imag
 
-    # Time t.
-    tx[0, ::2] = qpsk[::2] # x1
-    tx[1, ::2] = qpsk[1::2] # x2
+    tx = np.zeros((2, tx1.shape[-1]), dtype=np.complex128)
 
-    # Time t + T.
-    tx[0, 1::2] = -np.conj(qpsk[1::2]) # -x2*
-    tx[1, 1::2] = np.conj(qpsk[::2]) # x1*
+    # Antenna 1
+    tx[0] = tx1[0] + tx1[1] * 1j
+
+    # Antenna 2
+    tx[1] = tx2[0] + tx2[1] * 1j
 
     return tx
 
