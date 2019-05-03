@@ -279,6 +279,7 @@ def calculate_error_rate(recovered_signal_bits, transmitted_signal_bits):
     Returns:
         bits (1D ndarray): The bit sequence decoded from signal_freq.
     """
+    
     return np.sum(recovered_signal_bits != transmitted_signal_bits)/recovered_signal_bits.shape[-1]
 
 
@@ -288,14 +289,16 @@ def turn_data_to_bits(input):
     If the majority of the imag or real bits there are greater than 0, assign the index a 1
     """
     print("input length: ", input.shape)
-    bitsequence = []
+    # bitsequence = []
+    # symbols = np.zeros(input.shape[-1], dtype=np.complex128)
+    symbols = np.sign(input.real) + 1j * np.sign(input.imag)
 
-    for coordinates_i in range(0, len(input), mimo.SYMBOL_PERIOD):
-        # coordinates = input[coordinates_i:coordinates_i+mimo.SYMBOL_PERIOD]
+    # # for coordinates_i in range(0, len(input), mimo.SYMBOL_PERIOD):
+    #     # coordinates = input[coordinates_i:coordinates_i+mimo.SYMBOL_PERIOD]
         
-        middle_coordinate = input[coordinates_i + (mimo.SYMBOL_PERIOD//2)]
+    #     # middle_coordinate = input[coordinates_i + (mimo.SYMBOL_PERIOD//2)]
+    # for coord in input:
+    #     bitsequence.append(np.sign(coord.real))
+    #     bitsequence.append(np.sign(coord.imag))
 
-        bitsequence.append(np.sign(middle_coordinate.real))
-        bitsequence.append(np.sign(middle_coordinate.imag))
-
-    return np.sign(input)
+    return symbols

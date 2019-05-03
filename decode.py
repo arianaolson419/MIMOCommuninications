@@ -11,6 +11,8 @@ tx_info = np.load('tx_info.npz')
 header = tx_info['header']
 data = tx_info['data']
 tx_combined = tx_info['combined']
+symbols = tx_info['data_bits']
+
 
 use_saved_signal = True
 
@@ -48,7 +50,15 @@ print("H:\n", H)
 
 
 rx_data = signal_time_rx[header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1] + mimo.ZERO_SAMPLES: header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1] + mimo.ZERO_SAMPLES + data.shape[-1]]
-print("rx_data.shape: ", rx_data.shape)
+
+# plt.plot(rx_data.real)
+# plt.title("received signal -- real")
+# plt.show()
+
+# plt.plot(rx_data.imag)
+# plt.title("received signal -- imag")
+# plt.show()
+
 
 rx_data_downsampled = rx_data[10::20]
 
@@ -58,24 +68,15 @@ recovered_signal = receivers.recover_signals_alamouti(rx_data_downsampled, H)
 print("rx-data shape", rx_data.shape)
 print("recovered_signal shape", recovered_signal.shape)
 
-# # Calculate Bit Error Rate
-tx_qpsk = np.zeros(data.shape[-1], dtype=np.complex128)
-tx_qpsk[::2] = data[0, ::2]
-tx_qpsk[1::2] = data[1, ::2]
-
-
-
-recovered_signal_bits = receivers.turn_data_to_bits(recovered_signal)
-
-tx_qpsk_bits          = receivers.turn_data_to_bits(tx_qpsk[10::20])
-
-print("error rate: ", receivers.calculate_error_rate(recovered_signal_bits, tx_qpsk_bits))
-
-plt.plot(recovered_signal_bits)
+plt.plot(recovered_signal.real, recovered_signal.imag, ".")
+plt.title("Recovered Signal Constellation")
+plt.xlabel("Real")
+plt.ylabel("Imaginary")
 plt.show()
 
-plt.plot(tx_qpsk_bits)
-plt.show()
 
-plt.plot(recovered_signal_bits == tx_qpsk_bits)
-plt.show()
+
+
+recovered_signal_symbols = receivers.turn_data_to_bits(recovered_signal)
+
+print("error rate: ", receivers.calculate_error_rate(symbols, recovered_signal_symbols))
