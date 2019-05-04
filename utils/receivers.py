@@ -280,6 +280,10 @@ def calculate_error_rate(recovered_signal_bits, transmitted_signal_bits):
         bits (1D ndarray): The bit sequence decoded from signal_freq.
     """
     
+    plt.plot(recovered_signal_bits == transmitted_signal_bits)
+    plt.title("Comparing recovered signal with transmitted signal")
+    plt.show()
+
     return np.sum(recovered_signal_bits != transmitted_signal_bits)/recovered_signal_bits.shape[-1]
 
 
