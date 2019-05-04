@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 # Constants used for signal creation and analysis.
 SYMBOL_PERIOD = 20 # samples
-HEADER_SYMBOLS = 200
+HEADER_SYMBOLS = 100
 DATA_SYMBOLS = 1000
 ZERO_SAMPLES = 5000 # samples
 NUM_CHANNELS = 2
