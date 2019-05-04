@@ -25,4 +25,4 @@ tx_combined = mimo.add_headers_2x2(tx_data, header, mimo.ZERO_SAMPLES, scale=0.5
 mimo.interleave_and_save_data(tx_combined, 'tx_1.dat', 'tx_2.dat')
 
 # Save data arrays for decoding and BER calculations.
-np.savez('tx_info.npz', header=header, data=tx_data, combined=tx_combined)
+np.savez('tx_info.npz', header=header, data=tx_data, combined=tx_combined, data_bits=symbols_data)
