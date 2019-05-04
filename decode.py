@@ -14,7 +14,7 @@ tx_combined = tx_info['combined']
 symbols = tx_info['data_bits']
 
 
-use_saved_signal = True
+use_saved_signal = False
 
 if not use_saved_signal:
 # load received data
@@ -39,9 +39,9 @@ rx_header_1 = signal_time_rx[:header.shape[-1]]
 rx_header_2 = signal_time_rx[header.shape[-1]+mimo.ZERO_SAMPLES:header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1]]
 
 # # # correct for timing differences using timing_offset/f_delta variable
-f_delta_header_1 = receivers.find_f_delta(rx_header_1)
+f_delta_header_2, y_scale_header_2 = receivers.find_f_delta(rx_header_2)
 
-print("f_delta from header 1: ", f_delta_header_1)
+print("f_delta from header 2: ", f_delta_header_2)
 
 # plotting constellation before timing correction
 plt.plot(signal_time_rx.real[10::20], signal_time_rx.imag[10::20], ".")
@@ -50,14 +50,32 @@ plt.xlabel("Real")
 plt.ylabel("Imaginary")
 plt.show()
 
-
-
-
-signal_time_rx = receivers.correct_timing_offset(f_delta_header_1, signal_time_rx)
+signal_time_rx = receivers.correct_timing_offset(f_delta_header_2, y_scale_header_2, signal_time_rx)
 
 plt.plot(signal_time_rx)
 plt.title("Received Signal After Timing Correction")
 plt.show()
+
+
+
+# plotting constellation after timing correction
+plt.plot(signal_time_rx.real[:header.shape[-1]], signal_time_rx.imag[:header.shape[-1]], ".")
+plt.title("Received Header 1 Constellation After Timing Offset")
+plt.xlabel("Real")
+plt.ylabel("Imaginary")
+plt.show()
+
+plt.plot(signal_time_rx.real[header.shape[-1]+mimo.ZERO_SAMPLES:header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1]], signal_time_rx.imag[header.shape[-1]+mimo.ZERO_SAMPLES:header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1]], ".")
+plt.title("Received Header 2 Constellation After Timing Offset")
+plt.xlabel("Real")
+plt.ylabel("Imaginary")
+plt.show()
+
+
+rx_header_1 = signal_time_rx[:header.shape[-1]]
+rx_header_2 = signal_time_rx[header.shape[-1]+mimo.ZERO_SAMPLES:header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1]]
+
+
 
 # estimate the channel
 H = receivers.estimate_channel_alamouti(rx_header_1, rx_header_2, header[0], header[1])
@@ -88,6 +106,6 @@ recovered_signal_symbols = receivers.turn_data_to_bits(recovered_signal)
 print("error rate (no rotation): ", receivers.calculate_error_rate(symbols, recovered_signal_symbols))
 
 
-for n in range(8):
-    rotated_recovered_signal_symbols = receivers.turn_data_to_bits(recovered_signal * np.exp((np.pi/4) * n * 1j))
-    print("error rate: ", receivers.calculate_error_rate(symbols, rotated_recovered_signal_symbols))
+# for n in range(8):
+#     rotated_recovered_signal_symbols = receivers.turn_data_to_bits(recovered_signal * np.exp((np.pi/4) * n * 1j))
+#     print("error rate: ", receivers.calculate_error_rate(symbols, rotated_recovered_signal_symbols))
