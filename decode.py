@@ -14,7 +14,7 @@ tx_combined = tx_info['combined']
 symbols = tx_info['data_bits']
 
 
-use_saved_signal = False
+use_saved_signal = True
 
 if not use_saved_signal:
 # load received data
@@ -43,6 +43,16 @@ f_delta_header_1 = receivers.find_f_delta(rx_header_1)
 
 print("f_delta from header 1: ", f_delta_header_1)
 
+# plotting constellation before timing correction
+plt.plot(signal_time_rx.real[10::20], signal_time_rx.imag[10::20], ".")
+plt.title("Received Signal Constellation Before Timing Offset")
+plt.xlabel("Real")
+plt.ylabel("Imaginary")
+plt.show()
+
+
+
+
 signal_time_rx = receivers.correct_timing_offset(f_delta_header_1, signal_time_rx)
 
 plt.plot(signal_time_rx)
@@ -58,11 +68,9 @@ rx_data = signal_time_rx[header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1]
 
 rx_data_downsampled = rx_data[10::20]
 
-recovered_signal = receivers.recover_signals_alamouti(rx_data_downsampled, H)
 
+recovered_signal = receivers.recover_signals_alamouti(rx_data_downsampled, H) 
 
-print("rx-data shape", rx_data.shape)
-print("recovered_signal shape", recovered_signal.shape)
 
 plt.plot(recovered_signal.real, recovered_signal.imag, ".")
 plt.title("Recovered Signal Constellation")
@@ -75,6 +83,11 @@ plt.show()
 
 recovered_signal_symbols = receivers.turn_data_to_bits(recovered_signal)
 
-plt.plot(recovered_signal_bits == tx_qpsk_bits)
-plt.show()
-print("error rate: ", receivers.calculate_error_rate(symbols, recovered_signal_symbols))
+# plt.plot(recovered_signal_bits == tx_qpsk_bits)
+# plt.show()
+print("error rate (no rotation): ", receivers.calculate_error_rate(symbols, recovered_signal_symbols))
+
+
+for n in range(8):
+    rotated_recovered_signal_symbols = receivers.turn_data_to_bits(recovered_signal * np.exp((np.pi/4) * n * 1j))
+    print("error rate: ", receivers.calculate_error_rate(symbols, rotated_recovered_signal_symbols))
