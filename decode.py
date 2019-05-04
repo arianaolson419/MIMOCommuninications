@@ -14,7 +14,7 @@ tx_combined = tx_info['combined']
 symbols = tx_info['data_bits']
 
 
-use_saved_signal = True
+use_saved_signal = False
 
 if not use_saved_signal:
 # load received data
@@ -39,26 +39,22 @@ rx_header_1 = signal_time_rx[:header.shape[-1]]
 rx_header_2 = signal_time_rx[header.shape[-1]+mimo.ZERO_SAMPLES:header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1]]
 
 # # # correct for timing differences using timing_offset/f_delta variable
-# timing_offset = receivers.estimate_f_delta(lts, num_samples)
-# signal_time_timing_corrected = receivers.correct_freq_offset(signal_time_rx, timing_offset)
+f_delta_header_1 = receivers.find_f_delta(rx_header_1)
 
-# # estimate the channel (make sure it is corrected in time first)
+print("f_delta from header 1: ", f_delta_header_1)
+
+signal_time_rx = receivers.correct_timing_offset(f_delta_header_1, signal_time_rx)
+
+plt.plot(signal_time_rx)
+plt.title("Received Signal After Timing Correction")
+plt.show()
+
+# estimate the channel
 H = receivers.estimate_channel_alamouti(rx_header_1, rx_header_2, header[0], header[1])
 
 print("H:\n", H)
 
-
-
 rx_data = signal_time_rx[header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1] + mimo.ZERO_SAMPLES: header.shape[-1] + mimo.ZERO_SAMPLES + header.shape[-1] + mimo.ZERO_SAMPLES + data.shape[-1]]
-
-# plt.plot(rx_data.real)
-# plt.title("received signal -- real")
-# plt.show()
-
-# plt.plot(rx_data.imag)
-# plt.title("received signal -- imag")
-# plt.show()
-
 
 rx_data_downsampled = rx_data[10::20]
 

@@ -289,16 +289,55 @@ def turn_data_to_bits(input):
     If the majority of the imag or real bits there are greater than 0, assign the index a 1
     """
     print("input length: ", input.shape)
-    # bitsequence = []
-    # symbols = np.zeros(input.shape[-1], dtype=np.complex128)
     symbols = np.sign(input.real) + 1j * np.sign(input.imag)
-
-    # # for coordinates_i in range(0, len(input), mimo.SYMBOL_PERIOD):
-    #     # coordinates = input[coordinates_i:coordinates_i+mimo.SYMBOL_PERIOD]
-        
-    #     # middle_coordinate = input[coordinates_i + (mimo.SYMBOL_PERIOD//2)]
-    # for coord in input:
-    #     bitsequence.append(np.sign(coord.real))
-    #     bitsequence.append(np.sign(coord.imag))
-
     return symbols
+
+
+def find_f_delta(header):
+    # normalize
+    h_mag_est = np.sqrt(np.mean(np.square(header)))
+    header_normalized = header / h_mag_est
+
+    # Create s[k] by raising the signal to the 4th power.
+    s = np.power(header_normalized, 4)
+    fft = np.fft.fft(s)
+    shifted_fft = np.fft.fftshift(fft)
+    freq_axis = np.linspace(-np.pi, np.pi, shifted_fft.shape[-1])
+
+    # Get f_delta and theta from finding frequency value and peak height
+    x_offset = freq_axis[np.argmax(shifted_fft)]
+    y_height = np.max(shifted_fft)
+    y_scale = y_height / np.abs(y_height)
+    print('y height:', y_height)
+    f_delta  = (x_offset)/-4 
+    theta    = -1*np.angle(y_height)/4
+
+    # # Estimate x
+    return f_delta
+
+def correct_timing_offset(f_delta, signal_rx_time):
+    """Taking in the f_delta from header 1 and applying the changes 
+    
+    Arguments:
+        f_delta {float} -- f_delta from the first header
+        signal_rx_time {np array} -- entire signal
+    """
+    # Create s[k] by raising the signal to the 4th power.
+    s = np.power(signal_rx_time, 4)
+    fft = np.fft.fft(s)
+    shifted_fft = np.fft.fftshift(fft)
+    freq_axis = np.linspace(-np.pi, np.pi, shifted_fft.shape[-1])
+
+    # Get theta from finding frequency value and peak height
+    x_offset = freq_axis[np.argmax(shifted_fft)]
+
+    y_height = np.max(shifted_fft)
+    
+    # y_height is complex, so we scale the magnitude of it to 1
+    y_scale = y_height / np.abs(y_height)
+    theta    = -1*np.angle(y_height)/4
+    
+    psi = f_delta * np.arange(0,signal_rx_time.shape[-1]) + theta
+    x_est = signal_rx_time * np.exp(1j * psi) / np.power(y_scale, 0.25)
+
+    return x_est
