@@ -21,6 +21,16 @@ header = np.vstack([header_1, header_2])
 
 # Combine data and save to files for USRP transmission.
 tx_combined = mimo.add_headers_2x2(tx_data, header, mimo.ZERO_SAMPLES, scale=0.5)
+plt.figure(figsize=(10, 10))
+plt.suptitle('Signals transmitted from each antenna')
+plt.subplot(211)
+plt.plot(tx_combined[0].real)
+plt.title('Tx1')
+plt.subplot(212)
+plt.title('Tx2')
+plt.plot(tx_combined[1].real)
+plt.savefig('figures/tx_combined.png')
+plt.show()
 
 mimo.interleave_and_save_data(tx_combined, 'tx_1.dat', 'tx_2.dat')
 
